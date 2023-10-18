@@ -2,10 +2,10 @@
 import type { FileSystemCache } from 'file-system-cache';
 
 import type { Options as TelejsonOptions } from 'telejson';
-import type { TransformOptions } from '@babel/core';
 import type { Router } from 'express';
 import type { Server } from 'http';
 import type { PackageJson as PackageJsonFromTypeFest } from 'type-fest';
+import type { Options as SWCOptions } from '@swc/core';
 import type { StoriesEntry, Indexer, StoryIndexer } from './indexer';
 
 /**
@@ -70,7 +70,7 @@ export interface Presets {
     args?: Options
   ): Promise<TypescriptOptions>;
   apply(extension: 'framework', config?: {}, args?: any): Promise<Preset>;
-  apply(extension: 'babel', config?: {}, args?: any): Promise<TransformOptions>;
+  apply(extension: 'swc', config?: {}, args?: any): Promise<SWCOptions>;
   apply(extension: 'entries', config?: [], args?: any): Promise<unknown>;
   apply(extension: 'stories', config?: [], args?: any): Promise<StoriesEntry[]>;
   apply(extension: 'managerEntries', config: [], args?: any): Promise<string[]>;
@@ -212,12 +212,6 @@ export interface TypescriptOptions {
    * @default `false`
    */
   check: boolean;
-  /**
-   * Disable parsing typescript files through babel.
-   *
-   * @default `false`
-   */
-  skipBabel: boolean;
 }
 
 export type Preset =
@@ -335,25 +329,14 @@ export interface StorybookConfig {
   refs?: PresetValue<CoreCommon_StorybookRefs>;
 
   /**
-   * Modify or return babel config.
+   * Modify or return swc config.
    */
-  babel?: (
-    config: TransformOptions,
-    options: Options
-  ) => TransformOptions | Promise<TransformOptions>;
+  swc?: SWCOptions;
 
   /**
    * Modify or return env config.
    */
   env?: PresetValue<Record<string, string>>;
-
-  /**
-   * Modify or return babel config.
-   */
-  babelDefault?: (
-    config: TransformOptions,
-    options: Options
-  ) => TransformOptions | Promise<TransformOptions>;
 
   /**
    * Add additional scripts to run in the preview a la `.storybook/preview.js`

@@ -25,7 +25,7 @@ import {
 import { toRequireContextString, toImportFn } from '@storybook/core-webpack';
 import { dedent } from 'ts-dedent';
 import type { BuilderOptions, TypescriptOptions } from '../types';
-import { createBabelLoader, createSWCLoader } from './loaders';
+import { createSWCLoader } from './loaders';
 
 const getAbsolutePath = <I extends string>(input: I): I =>
   dirname(require.resolve(join(input, 'package.json'))) as any;
@@ -70,7 +70,6 @@ export default async (
     configType,
     presets,
     previewUrl,
-    babelOptions,
     typescriptOptions,
     features,
   } = options;
@@ -89,6 +88,7 @@ export default async (
     docsOptions,
     entries,
     nonNormalizedStories,
+    swc,
     modulesCount = 1000,
   ] = await Promise.all([
     presets.apply<CoreConfig>('core'),
@@ -101,6 +101,7 @@ export default async (
     presets.apply<DocsOptions>('docs'),
     presets.apply<string[]>('entries', []),
     presets.apply('stories', []),
+    presets.apply('swc', {}),
     options.cache?.get('modulesCount').catch(() => {}),
   ]);
 
@@ -110,6 +111,8 @@ export default async (
   });
 
   const builderOptions = await getBuilderOptions<BuilderOptions>(options);
+
+  const useSWCLoader = builderOptions.useSWC ?? true;
 
   const previewAnnotations = [
     ...(await presets.apply<PreviewAnnotation[]>('previewAnnotations', [], options)).map(
@@ -197,7 +200,7 @@ export default async (
     }
   }
 
-  const shouldCheckTs = typescriptOptions.check && !typescriptOptions.skipBabel;
+  const shouldCheckTs = typescriptOptions.check;
   const tsCheckOptions = typescriptOptions.checkOptions || {};
 
   const cacheConfig = builderOptions.fsCache ? { cache: { type: 'filesystem' as const } } : {};
@@ -304,9 +307,7 @@ export default async (
             fullySpecified: false,
           },
         },
-        builderOptions.useSWC
-          ? createSWCLoader(Object.keys(virtualModuleMapping))
-          : createBabelLoader(babelOptions, typescriptOptions, Object.keys(virtualModuleMapping)),
+        useSWCLoader ? createSWCLoader(Object.keys(virtualModuleMapping), swc) : {},
         {
           test: /\.md$/,
           type: 'asset/source',
@@ -342,7 +343,7 @@ export default async (
       ...(isProd
         ? {
             minimize: true,
-            minimizer: builderOptions.useSWC
+            minimizer: useSWCLoader
               ? [
                   new TerserWebpackPlugin({
                     minify: TerserWebpackPlugin.swcMinify,

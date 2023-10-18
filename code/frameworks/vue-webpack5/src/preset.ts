@@ -21,8 +21,3 @@ export const core: PresetProperty<'core', StorybookConfig> = async (config, opti
     renderer: getAbsolutePath('@storybook/vue'),
   };
 };
-
-export const typescript: PresetProperty<'typescript', StorybookConfig> = async (config) => ({
-  ...config,
-  skipBabel: true,
-});

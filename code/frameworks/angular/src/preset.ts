@@ -32,14 +32,10 @@ export const core: PresetProperty<'core', StorybookConfig> = async (config, opti
     ...config,
     builder: {
       name: getAbsolutePath('@storybook/builder-webpack5'),
-      options: typeof framework === 'string' ? {} : framework.options.builder || {},
+      options: {
+        useSWC: false,
+        ...(typeof framework === 'string' ? {} : framework.options.builder || {}),
+      },
     },
-  };
-};
-
-export const typescript: PresetProperty<'typescript', StorybookConfig> = async (config) => {
-  return {
-    ...config,
-    skipBabel: true,
   };
 };
