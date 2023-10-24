@@ -34,6 +34,8 @@ export const swc: PresetPropertyFn<'swc', StorybookConfig> = (config) => {
         ...(config?.jsc?.transform ?? {}),
         react: {
           ...(config?.jsc?.transform?.react ?? {}),
+          runtime: 'automatic',
+          importSource: 'preact',
           pragma: 'h',
           pragmaFrag: 'Fragment',
           development: isDevelopment,
